@@ -1,6 +1,6 @@
 import express from 'express'; 
 import { google } from 'googleapis'; 
-import GDrive from './public/JS/GDrive.js'; 
+import GDrive from './public/js/GDrive.js';
 import fs from 'fs'; // Import fs for reading the config file
 
 const app = express();

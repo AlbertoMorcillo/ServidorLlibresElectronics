@@ -38,4 +38,4 @@ class GDrive {
   }
 }
 
-module.exports = GDrive;
+export default GDrive;
