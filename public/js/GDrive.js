@@ -6,8 +6,10 @@ class GDrive {
   }
 
   async listFiles() {
-    const res = await this.drive.files.list();
-    return res.data;
+    const res = await this.drive.files.list({
+      fields: 'files(id, name, mimeType, parents)'
+    });
+    return res.data.files;
   }
 
   async createFile(name, mimeType, content) {
