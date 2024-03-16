@@ -1,0 +1,25 @@
+/* Estilos para el área de drop */
+#drop-area {
+    width: 300px;
+    height: 200px;
+    border: 2px dashed #ccc;
+    border-radius: 20px;
+    text-align: center;
+    line-height: 200px;
+    font-size: 20px;
+    margin: 50px auto;
+}
+
+/* Estilos para resaltar el área de drop cuando se arrastra un elemento */
+#drop-area.dragover {
+    border-color: #009688;
+}
+
+#mostrarEbook{
+    width: 60%;
+    height: auto;
+    border: 1px solid #ccc;
+    text-align: center;
+    font-size: 20px;
+    margin: 50px auto;
+}
