@@ -24,7 +24,7 @@ const gdrive = new GDrive(oauth2Client);
 
 app.get('/files', async (req, res) => {
   try {
-    const files = await gdrive.listFiles();
+    const files = await gdrive.listarArchivos();
     res.json(files);
   } catch (error) {
     res.status(500).send('Error retrieving files');
@@ -34,20 +34,30 @@ app.get('/files', async (req, res) => {
 app.post('/file', async (req, res) => {
   try {
     const { name, mimeType, content } = req.body;
-    const file = await gdrive.createFile(name, mimeType, content);
+    const file = await gdrive.crearArchivo(name, mimeType, content);
     res.json(file);
   } catch (error) {
-    res.status(500).send('Error creating file');
+    res.status(500).send('Error creando archivo');
   }
 });
 
 app.delete('/file/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const response = await gdrive.deleteFile(id);
+    const response = await gdrive.borrarArchivo(id);
     res.json(response);
   } catch (error) {
-    res.status(500).send('Error deleting file');
+    res.status(500).send('Error eliminando archivo');
+  }
+});
+
+app.post('/folder', async (req, res) => {
+  try {
+    const { name, parentId } = req.body;
+    const folder = await gdrive.crearCarpeta(name, parentId);
+    res.json(folder);
+  } catch (error) {
+    res.status(500).send('Error creando carpeta');
   }
 });
 
