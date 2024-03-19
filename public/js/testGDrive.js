@@ -22,14 +22,14 @@ async function testGDrive() {
 
     const rutaLocal = '../eBooks/Harry Potter and the Cursed Child.epub';
     const tipusMIME = 'application/epub+zip';
-    const nomArxiuDrive = 'Ejemploexample.epub';
+    const nomArxiuDrive = 'Harry Potter and the Cursed Child.epub';
     const nuevoArchivo = await gDrive.guardarArchivo(rutaLocal, tipusMIME, idCarpetaDrive, nomArxiuDrive);
     console.log('Nuevo archivo:');
     console.log(nuevoArchivo);
 
-    const idArxiu = '19w9XceDETyYBDd1gwzyltp8Sy7cQj7j-mtIhfxgJmFY';
-    await gDrive.borrarArchivo(idArxiu);
-    console.log('Archivo borrado.');
+    // const idArxiu = '19w9XceDETyYBDd1gwzyltp8Sy7cQj7j-mtIhfxgJmFY';
+    // await gDrive.borrarArchivo(idArxiu);
+    // console.log('Archivo borrado.');
 
 
     const nomCarpetaFilla = 'EjemploCarpetaFilla';
