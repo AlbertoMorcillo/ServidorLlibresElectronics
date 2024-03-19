@@ -25,16 +25,25 @@ if(dropArea){
         preventDefaultBehavior(event);
         dropArea.classList.remove('dragover');
 
+        // Check if any files were dropped
+        if (event.dataTransfer.files.length === 0) {
+            console.error('No files were dropped.');
+            return;
+        }
+
         // Obtener el archivo soltado
-        let file = event.dataTransfer.files[0];
+        let archiu = event.dataTransfer.files[0];
         
-        console.log('Archivo soltado:', file.name);
-        //enviar archivo al servidor
-        let peticio = { accio: "cargarEbook", file: file };
+        let peticio = new FormData();
+        peticio.append("accio", "cargarEbook");
+        peticio.append("file", archiu);
+        
         $.ajax({
             url: "/cargarEbook",
             method: "POST",
             data: peticio,
+            processData: false,
+            contentType: false,
             success: function(response) {
                 console.log(response);
             },

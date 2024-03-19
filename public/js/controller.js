@@ -5,19 +5,22 @@ if(login){
         let user = document.getElementById('nameUser').value;
         if(user != ''){
             let peticio = { accio: "login", user: user };
-            window.location.href = "view/home.html";
-            // $.ajax({
-            //     url: "/loginUsuari",
-            //     method: "POST",
-            //     data: peticio,
-            //     success: function(response) {
-            //         console.log(response);
-            //     },
-            //     error: function(xhr, status, error) {
-            //         console.error(xhr.responseText);
-            //         alert("Error al inseri usuari.");
-            //     }
-            // });
+            $.ajax({
+                url: "/loginUsuari",
+                method: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(peticio),
+                success: function(response) {
+                    if(response.accio == "urlHome"){
+                        window.location.href = response.url;
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error(xhr.responseText);
+                    alert("Error al insertar usuario.");
+                }
+            });
+            
         }else{
             alert('Ingrese un nombre de usuario');
         }
