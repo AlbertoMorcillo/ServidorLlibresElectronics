@@ -27,11 +27,11 @@ async function testGDrive() {
     console.log('Nuevo archivo:');
     console.log(nuevoArchivo);
 
-    const idArxiu = 'your-file-id';
+    const idArxiu = '19w9XceDETyYBDd1gwzyltp8Sy7cQj7j-mtIhfxgJmFY';
     await gDrive.borrarArchivo(idArxiu);
     console.log('Archivo borrado.');
 
-    // Reemplaza esto con el nombre que quieres que tenga la nueva carpeta
+
     const nomCarpetaFilla = 'EjemploCarpetaFilla';
     const nuevaCarpeta = await gDrive.crearCarpeta(idCarpetaDrive, nomCarpetaFilla);
     console.log('Nueva carpeta:');
