@@ -1,7 +1,9 @@
 import express from 'express'; 
 import { google } from 'googleapis'; 
 import GDrive from './public/js/GDrive.js';
-import fs from 'fs'; 
+import fs from 'fs';
+import multer from 'multer';
+const upload = multer({ dest: 'uploads/' });
 
 const app = express();
 const port = 8080;
@@ -91,6 +93,25 @@ app.post('/loginUsuari', (req, res) => {
           usuaris.push(user);
           res.send({accio: "urlHome", url: "view/home.html"});
       }
+  }
+});
+
+app.post('/cargarEbook', upload.single('file'), (req, res) => {
+  let accio = req.body.accio;
+  let file = req.file; // file is now in req.file
+
+  if(accio == "cargarEbook"){
+    peticio.append("file", archiu);
+    //Upload file to Google Drive
+    gdrive.createFile(file.originalname, file.mimetype, fs.readFileSync(file.path))
+      .then((file) => {
+        console.log("Uploaded file: " + file.name);
+      })
+      .catch((error) => {
+        console.error(error);
+        res.status(500).send('Error uploading file');
+      });
+      
   }
 });
 

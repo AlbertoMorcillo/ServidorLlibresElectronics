@@ -8,6 +8,7 @@ if(login){
             $.ajax({
                 url: "/loginUsuari",
                 method: "POST",
+                contentType: "application/json",
                 data: JSON.stringify(peticio),
                 success: function(response) {
                     if(response.accio == "urlHome"){
@@ -16,9 +17,10 @@ if(login){
                 },
                 error: function(xhr, status, error) {
                     console.error(xhr.responseText);
-                    alert("Error al inseri usuari.");
+                    alert("Error al insertar usuario.");
                 }
             });
+            
         }else{
             alert('Ingrese un nombre de usuario');
         }
