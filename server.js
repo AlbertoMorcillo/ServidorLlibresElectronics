@@ -51,6 +51,49 @@ app.delete('/file/:id', async (req, res) => {
   }
 });
 
+let usuaris = [];
+
+app.use(express.static('public'));
+
+app.get('/', (req, res) => {
+  const base = 'http://' + req.headers.host + '/';
+  const url = new URL(req.url, base);
+
+  let filename = "." + url.pathname;
+  if (filename == "./") filename += "index.html";
+
+  if (existsSync(filename)) {
+      console.log("------\nEnviant " + filename);
+      const contentType = tipusArxiu(filename);
+      if (contentType) {
+          readFile(filename, (err, data) => {
+              if (err) {
+                  res.status(500).send('Error reading the file');
+              } else {
+                  res.setHeader('Content-Type', contentType);
+                  res.send(data);
+              }
+          });
+      } else {
+          res.status(500).send('Unknown file type');
+      }
+  } else {
+      res.status(404).send('File not found');
+  }
+});
+
+app.post('/loginUsuari', (req, res) => {
+  let miss = req.body;
+  console.log(miss);
+  if(miss.accio == "login"){
+      let user = miss.user;
+      if(user != ''){
+          usuaris.push(user);
+          res.send({accio: "urlHome", url: "view/home.html"});
+      }
+  }
+});
+
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
