@@ -1,5 +1,5 @@
 import express from 'express'; 
-import { google } from 'googleapis'; 
+import { google } from 'googleapis';
 import GDrive from './public/js/GDrive.js';
 import fs from 'fs';
 import multer from 'multer';
@@ -33,13 +33,18 @@ app.get('/files', async (req, res) => {
   }
 });
 
-app.post('/file', async (req, res) => {
-  try {
-    const { name, mimeType, content } = req.body;
-    const file = await gdrive.crearArchivo(name, mimeType, content);
-    res.json(file);
-  } catch (error) {
-    res.status(500).send('Error creando archivo');
+app.post('/cargarEbook', upload.single('file'), async (req, res) => {
+  let accio = req.body.accio;
+  let archiu = req.file;
+
+  if(accio == "cargarEbook"){
+    try {
+      console.log(archiu.path, archiu.mimetype, archiu.originalname);
+      const file = await gdrive.guardarArchivo(archiu.path, archiu.mimetype, "1N3RNMxqqS708J03uatXP2U4lFDOQP2_E", archiu.originalname);
+      res.json(file);
+    } catch (error) {
+      res.status(500).send('Error creando archivo');
+    }
   }
 });
 
@@ -106,24 +111,6 @@ app.post('/loginUsuari', (req, res) => {
   }
 });
 
-app.post('/cargarEbook', upload.single('file'), (req, res) => {
-  let accio = req.body.accio;
-  let file = req.file; // file is now in req.file
-
-  if(accio == "cargarEbook"){
-    peticio.append("file", archiu);
-    //Upload file to Google Drive
-    gdrive.createFile(file.originalname, file.mimetype, fs.readFileSync(file.path))
-      .then((file) => {
-        console.log("Uploaded file: " + file.name);
-      })
-      .catch((error) => {
-        console.error(error);
-        res.status(500).send('Error uploading file');
-      });
-      
-  }
-});
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
