@@ -3,8 +3,8 @@ import { google } from 'googleapis';
 import GDrive from './public/js/GDrive.js';
 import fs from 'fs';
 import multer from 'multer';
-const upload = multer({ dest: 'uploads/' });
 
+const upload = multer({ dest: 'uploads/' });
 const app = express();
 const port = 8080;
 const idCarpetaDrive = '1N3RNMxqqS708J03uatXP2U4lFDOQP2_E';
@@ -129,6 +129,9 @@ app.post('/loginUsuari', (req, res) => {
   }
 });
 
+app.get('/drive-folder-id', (req, res) => {
+  res.json({ id: idCarpetaDrive });
+});
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
