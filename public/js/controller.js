@@ -43,3 +43,4 @@ if (btnGoBack) {
         document.getElementById('login-area').style.display = 'block';
     });
 }
+

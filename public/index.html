@@ -26,9 +26,19 @@
             <div id="drop-area">
                 <p>Arrastra y suelta aquí el epub</p>
             </div>
-            <div id="mostrarEbook">
-                <!-- Aquí se mostrarán los ebooks -->
-            </div>
+            <div id="listaLibros">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Nombre del Libro</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="libros">
+                        <!-- Los libros se cargarán aquí -->
+                    </tbody>
+                </table>
+            </div>            
             <button type="button" id="btnGoBack" class="btn btn-secondary">Ir atrás</button>
         </div>
     </main>

@@ -7,6 +7,7 @@ const upload = multer({ dest: 'uploads/' });
 
 const app = express();
 const port = 8080;
+const idCarpetaDrive = '1N3RNMxqqS708J03uatXP2U4lFDOQP2_E';
 
 app.use(express.json());
 
@@ -26,10 +27,11 @@ const gdrive = new GDrive(oauth2Client);
 
 app.get('/files', async (req, res) => {
   try {
-    const files = await gdrive.listarArchivos();
+    const files = await gdrive.obtenerArchivos(idCarpetaDrive);
     res.json(files);
   } catch (error) {
-    res.status(500).send('Error retrieving files');
+    console.error(error);
+    res.status(500).send('Error al recuperar los archivos');
   }
 });
 
