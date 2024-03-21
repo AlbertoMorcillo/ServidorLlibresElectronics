@@ -3,14 +3,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Free Readers</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
     <script defer src="js/controller.js"></script>
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.bundle.min.js"></script>
+    <script defer src="./js/ebooks.js"></script>
+    <link rel="stylesheet" href="./assets/style.css">
 </head>
 <body>
-    <h1>Free Readers</h1>
-    <label for="nameUser">Ingrese su nombre de usuario: </label>
-    <input type="text" id="nameUser" name="nameUser">
-    <button type="button" id="btnLogin">Entrar</button>
-    
+    <main class="container">
+        <div id="login-area">
+            <h1>Free Readers</h1>
+            <label for="nameUser">Ingrese su nombre de usuario: </label>
+            <input type="text" id="nameUser" name="nameUser">
+            <label for="isAdmin">Si quieres ser administrador dale click al checkbox</label>
+            <input type="checkbox" id="isAdmin" name="isAdmin">
+            <button type="button" id="btnLogin" class="btn btn-primary">Entrar</button>
+        </div>
+        
+        <div id="welcome-area" style="display:none;">
+            <h2 id="welcome-message"></h2>
+            <div id="drop-area">
+                <p>Arrastra y suelta aquí el epub</p>
+            </div>
+            <div id="mostrarEbook">
+                <!-- Aquí se mostrarán los ebooks -->
+            </div>
+            <button type="button" id="btnGoBack" class="btn btn-secondary">Ir atrás</button>
+        </div>
+    </main>
 </body>
 </html>

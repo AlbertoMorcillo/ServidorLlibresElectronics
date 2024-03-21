@@ -100,14 +100,30 @@ app.get('/', (req, res) => {
 });
 
 app.post('/loginUsuari', (req, res) => {
-  let miss = req.body;
-  console.log(miss);
-  if(miss.accio == "login"){
-      let user = miss.user;
-      if(user != ''){
-          usuaris.push(user);
-          res.send({accio: "urlHome", url: "view/home.html"});
+  let data = req.body;
+  console.log(data);
+  if (data.accio === "login") {
+      let user = data.user;
+      let isAdmin = data.isAdmin;
+      if (user !== '') {
+          //! IMPLEMENTAR LA LÓGICA DE AUTENTICACIÓN DE USUARIOS AQUÍ
+          res.json({
+              accio: "loginSuccess",
+              isAdmin: isAdmin,
+              message: `Bienvenido/a, ${user}${isAdmin ? ' (Admin)' : ''}`,
+          });
+      } else {
+          res.status(400).json({
+              accio: "loginFailed",
+              message: "Por favor, ingrese un nombre de usuario."
+          });
       }
+  } else {
+      // Si la acción no es "login", puedes responder con un error o mensaje adecuado.
+      res.status(400).json({
+          accio: "unknownAction",
+          message: "Acción desconocida."
+      });
   }
 });
 
