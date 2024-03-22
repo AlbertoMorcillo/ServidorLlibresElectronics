@@ -78,7 +78,6 @@ function subirArchivo(file) {
 }
 
 // Función para cargar y mostrar la lista de libros
-// Función para cargar y mostrar la lista de libros
 function cargarLibros() {
     $.ajax({
         url: "/files",
