@@ -1,42 +1,43 @@
+// ebooks.js
+
 // Variable global para almacenar el estado del usuario administrador.
-let isAdmin = false;
+let isAdmin = localStorage.getItem('isAdmin') === 'true';
 
-// Establecer el comportamiento del área de arrastre y soltado
-let dropArea = document.getElementById('drop-area');
-
+// Cuando el documento esté listo, carga los libros y configura la interacción si el usuario es un admin.
 $(document).ready(function() {
-    $.get('/load-files', function(files) {
-        files.forEach(file => {
-            $('#libros').append(`
-                <tr>
-                    <td>${file.name}</td>
-                    <td>
-                        <a href="${file.webContentLink}" target="_blank">Ver</a>
-                    </td>
-                </tr>
-            `);
-        });
-    });
+    cargarLibros();
+    if (isAdmin) {
+        configurarDropArea();
+    }
 });
 
-if(dropArea) {
-    // Prevenir el comportamiento predeterminado del navegador en eventos de arrastre
+// Configura el área de arrastre y soltado solo si el usuario es un administrador.
+function configurarDropArea() {
+    let dropArea = document.getElementById('drop-area');
+    if (isAdmin) {
+        dropArea.style.display = 'block';  // Asegúrate de que el área de arrastre se muestre solo para admins
+    } else {
+        dropArea.style.display = 'none';  // Oculta el área de arrastre para usuarios no administradores
+    }
+
     ['dragover', 'dragleave', 'drop'].forEach(eventName => {
         dropArea.addEventListener(eventName, preventDefaultBehavior, false);
     });
 
-    // Resaltar el área de arrastre cuando un elemento se arrastra sobre ella
-    dropArea.addEventListener('dragover', () => {
-        dropArea.classList.add('dragover');
-    });
-
-    // Quitar el resaltado cuando el elemento sale del área de arrastre o se suelta
+    dropArea.addEventListener('dragover', highlightDropArea, false);
     ['dragleave', 'drop'].forEach(eventName => {
-        dropArea.addEventListener(eventName, () => dropArea.classList.remove('dragover'));
+        dropArea.addEventListener(eventName, unhighlightDropArea, false);
     });
 
-    // Manejar el evento de soltado
     dropArea.addEventListener('drop', handleDrop, false);
+}
+
+function highlightDropArea() {
+    dropArea.classList.add('dragover');
+}
+
+function unhighlightDropArea() {
+    dropArea.classList.remove('dragover');
 }
 
 function preventDefaultBehavior(event) {
@@ -67,7 +68,7 @@ function subirArchivo(file) {
         contentType: false,
         success: function(response) {
             console.log(response);
-            cargarLibros(); // Recargar la lista de libros después de subir un nuevo libro
+            cargarLibros(); // Recargar la lista de libros
         },
         error: function(xhr) {
             console.error(xhr.responseText);
@@ -77,20 +78,26 @@ function subirArchivo(file) {
 }
 
 // Función para cargar y mostrar la lista de libros
+// Función para cargar y mostrar la lista de libros
 function cargarLibros() {
     $.ajax({
         url: "/files",
         type: "GET",
         success: function(libros) {
             const tbody = document.getElementById('libros');
-            tbody.innerHTML = ''; // Limpiar la tabla antes de añadir filas nuevas
+            tbody.innerHTML = ''; // Limpiar antes de añadir nuevos elementos
             libros.forEach(libro => {
-                let fila = `<tr>
-                                <td>${libro.name}</td>
-                                <td>${isAdmin ? `<button onclick="eliminarLibro('${libro.id}')" class="btn btn-danger">Eliminar</button>` : ''}</td>
-                            </tr>`;
+                let fila = `
+                    <tr>
+                        <td>${libro.name}</td>
+                        <td>
+                            <a href="${libro.webContentLink}" target="_blank">Ver</a>
+                            ${isAdmin ? `<button onclick="eliminarLibro('${libro.id}')" class="btn btn-danger">Eliminar</button>` : ''}
+                        </td>
+                    </tr>`;
                 tbody.innerHTML += fila;
             });
+            configurarDropArea();  // Actualizar el estado del área de arrastre
         },
         error: function() {
             alert("Error al cargar los libros.");
@@ -107,7 +114,7 @@ function eliminarLibro(idLibro) {
         type: "DELETE",
         success: function() {
             alert("Libro eliminado con éxito.");
-            cargarLibros(); // Recargar los libros después de eliminar
+            cargarLibros(); // Recargar los libros
         },
         error: function(xhr) {
             console.error(xhr.responseText);
