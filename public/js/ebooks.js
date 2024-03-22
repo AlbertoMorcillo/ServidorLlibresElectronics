@@ -4,6 +4,21 @@ let isAdmin = false;
 // Establecer el comportamiento del área de arrastre y soltado
 let dropArea = document.getElementById('drop-area');
 
+$(document).ready(function() {
+    $.get('/load-files', function(files) {
+        files.forEach(file => {
+            $('#libros').append(`
+                <tr>
+                    <td>${file.name}</td>
+                    <td>
+                        <a href="${file.webContentLink}" target="_blank">Ver</a>
+                    </td>
+                </tr>
+            `);
+        });
+    });
+});
+
 if(dropArea) {
     // Prevenir el comportamiento predeterminado del navegador en eventos de arrastre
     ['dragover', 'dragleave', 'drop'].forEach(eventName => {

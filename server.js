@@ -70,6 +70,7 @@ app.post('/folder', async (req, res) => {
   }
 });
 
+
 let usuaris = [];
 
 app.use(express.static('public'));
@@ -131,6 +132,18 @@ app.post('/loginUsuari', (req, res) => {
 
 app.get('/drive-folder-id', (req, res) => {
   res.json({ id: idCarpetaDrive });
+});
+
+app.get('/load-files', async (req, res) => {
+  try {
+    const drive = google.drive({ version: 'v3', auth: oauth2Client });
+    const response = await drive.files.list({
+      q: `'${idCarpetaDrive}' in parents`,
+    });
+    res.json(response.data.files);
+  } catch (error) {
+    res.status(500).send(error);
+  }
 });
 
 app.listen(port, () => {
