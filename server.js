@@ -60,6 +60,61 @@ app.delete('/file/:id', async (req, res) => {
   }
 });
 
+app.get('/file/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const response = await gdrive.obtenerArchivo(id);
+
+    const rutaLocal = `./public/${id}.epub`;
+    
+    // Guardar el archivo ePub en el servidor
+    fs.writeFileSync(rutaLocal, response.data);
+
+    // Descomprimir el archivo ePub
+    const capituloUrls = descomprimirEpub(rutaLocal, id);
+
+    // Enviar la lista de URLs de los capítulos al cliente
+    res.json({ capituloUrls });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error al recuperar el archivo');
+  }
+});
+
+// Descomprimir archivo .epub
+function descomprimirEpub(rutaLocal, id) {
+  const AdmZip = require('adm-zip');
+  const zip = new AdmZip(rutaLocal);
+  const rutaDestino = `./public/ebooks/${id}/`;
+
+  // Crear carpeta de destino si no existe
+  if (!fs.existsSync(rutaDestino)) {
+    fs.mkdirSync(rutaDestino, { recursive: true });
+  }
+
+  zip.extractAllTo(rutaDestino, true);
+
+  const containerXml = fs.readFileSync(`${rutaDestino}META-INF/container.xml`, 'utf-8');
+  const rutaContentOpf = /full-path="([^"]+)"/.exec(containerXml)[1];
+
+  const contentOpf = fs.readFileSync(`${rutaDestino}${rutaContentOpf}`, 'utf-8');
+  const parser = new DOMParser();
+  const xmlDoc = parser.parseFromString(contentOpf, 'text/xml');
+
+  const capituloUrls = [];
+
+  const spineItems = xmlDoc.getElementsByTagName('itemref');
+
+  for (let item of spineItems) {
+    const idref = item.getAttribute('idref');
+    const href = xmlDoc.querySelector(`item[id="${idref}"]`).getAttribute('href');
+    capituloUrls.push(`${rutaDestino}${href}`);
+  }
+
+  return capituloUrls;
+}
+
+
 app.post('/folder', async (req, res) => {
   try {
     const { name, parentId } = req.body;

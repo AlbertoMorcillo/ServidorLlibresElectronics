@@ -22,6 +22,16 @@ async obtenerArchivos(idCarpetaDrive) {
     return res.data.files;
 }
 
+//Obtener el archivo de Google Drive
+async obtenerArchivo(idArxiu) {
+    const response = await this.drive.files.get({
+        fileId: idArxiu,
+        alt: 'epub'
+    }, { responseType: 'stream' });
+
+    return response.data;
+}
+
 async guardarArchivo(rutaLocal, tipusMIME, idCarpetaDrive, nomArxiuDrive) {
     const fileStream = fs.createReadStream(rutaLocal);
 

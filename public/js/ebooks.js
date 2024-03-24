@@ -90,7 +90,7 @@ function cargarLibros() {
                     <tr>
                         <td>${libro.name}</td>
                         <td>
-                            <a href="${libro.webContentLink}" target="_blank">Ver</a>
+                            <button onclick="verLibro('${libro.id}')" target="_blank">Ver</button>
                             ${isAdmin ? `<button onclick="eliminarLibro('${libro.id}')" class="btn btn-danger">Eliminar</button>` : ''}
                         </td>
                     </tr>`;
@@ -101,6 +101,36 @@ function cargarLibros() {
         error: function() {
             alert("Error al cargar los libros.");
         }
+    });
+}
+
+function verLibro(idLibro) {
+    // Enviar el id del libro al servidor para que lo descargue y lo descomprima
+    $.ajax({
+        url: `/file/${idLibro}`,
+        type: "GET",
+        success: function(response) {
+            console.log(response);
+            mostrarCapitulos(response.capituloUrls);
+        },
+        error: function(xhr) {
+            console.error(xhr.responseText);
+            alert("Error al abrir el libro.");
+        }
+    });
+}
+
+function mostrarCapitulos(capituloUrls) {
+    const listaCapitulos = document.getElementById('listaCapitulos');
+    listaCapitulos.innerHTML = ''; // Limpiar antes de añadir nuevos elementos
+
+    capituloUrls.forEach((url, index) => {
+        let listItem = document.createElement('li');
+        let link = document.createElement('a');
+        link.href = url;
+        link.textContent = `Capítulo ${index + 1}`;
+        listItem.appendChild(link);
+        listaCapitulos.appendChild(listItem);
     });
 }
 
