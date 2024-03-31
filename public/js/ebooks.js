@@ -1,42 +1,44 @@
-// ebooks.js
-
 // Variable global para almacenar el estado del usuario administrador.
 let isAdmin = localStorage.getItem('isAdmin') === 'true';
+let dropArea; // Declaración de la variable global para el área de arrastre y soltado
 
 // Cuando el documento esté listo, carga los libros y configura la interacción si el usuario es un admin.
 $(document).ready(function() {
     cargarLibros();
+    dropArea = document.getElementById('drop-area'); // Asignar el elemento del DOM a la variable global
     if (isAdmin) {
         configurarDropArea();
+    } else {
+        dropArea.style.display = 'none'; // Ocultar área de arrastre para no administradores
     }
 });
 
 // Configura el área de arrastre y soltado solo si el usuario es un administrador.
 function configurarDropArea() {
-    let dropArea = document.getElementById('drop-area');
     if (isAdmin) {
-        dropArea.style.display = 'block';  // Asegúrate de que el área de arrastre se muestre solo para admins
-    } else {
-        dropArea.style.display = 'none';  // Oculta el área de arrastre para usuarios no administradores
+        dropArea.style.display = 'block';  // Muestra el área de arrastre para admins
+        ['dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaultBehavior, false);
+        });
+
+        dropArea.addEventListener('dragover', highlightDropArea, false);
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, unhighlightDropArea, false);
+        });
+
+        dropArea.addEventListener('drop', handleDrop, false);
     }
-
-    ['dragover', 'dragleave', 'drop'].forEach(eventName => {
-        dropArea.addEventListener(eventName, preventDefaultBehavior, false);
-    });
-
-    dropArea.addEventListener('dragover', highlightDropArea, false);
-    ['dragleave', 'drop'].forEach(eventName => {
-        dropArea.addEventListener(eventName, unhighlightDropArea, false);
-    });
-
-    dropArea.addEventListener('drop', handleDrop, false);
 }
 
-function highlightDropArea() {
+function highlightDropArea(event) {
+    event.preventDefault();
+    event.stopPropagation();
     dropArea.classList.add('dragover');
 }
 
-function unhighlightDropArea() {
+function unhighlightDropArea(event) {
+    event.preventDefault();
+    event.stopPropagation();
     dropArea.classList.remove('dragover');
 }
 
@@ -46,6 +48,7 @@ function preventDefaultBehavior(event) {
 }
 
 function handleDrop(event) {
+    preventDefaultBehavior(event);
     let files = event.dataTransfer.files;
     if (files.length) {
         let file = files[0]; // Tomar solo el primer archivo si se sueltan varios
@@ -68,7 +71,7 @@ function subirArchivo(file) {
         contentType: false,
         success: function(response) {
             console.log(response);
-            cargarLibros(); // Recargar la lista de libros
+            cargarLibros(); // Recargar la lista de libros tras la subida
         },
         error: function(xhr) {
             console.error(xhr.responseText);
@@ -90,19 +93,20 @@ function cargarLibros() {
                     <tr>
                         <td>${libro.name}</td>
                         <td>
-                            <button onclick="verLibro('${libro.id}')" target="_blank">Ver</button>
+                            <button onclick="verLibro('${libro.id}')" class="btn btn-primary">Ver</button>
                             ${isAdmin ? `<button onclick="eliminarLibro('${libro.id}')" class="btn btn-danger">Eliminar</button>` : ''}
                         </td>
                     </tr>`;
                 tbody.innerHTML += fila;
             });
-            configurarDropArea();  // Actualizar el estado del área de arrastre
+            if (isAdmin) { configurarDropArea(); } // Re-configurar el área de arrastre si es necesario
         },
         error: function() {
             alert("Error al cargar los libros.");
         }
     });
 }
+
 
 function verLibro(idLibro) {
     // Enviar el id del libro al servidor para que lo descargue y lo descomprima

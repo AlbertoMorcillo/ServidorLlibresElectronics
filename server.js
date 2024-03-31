@@ -3,6 +3,8 @@ import { google } from 'googleapis';
 import GDrive from './public/js/GDrive.js';
 import fs from 'fs';
 import multer from 'multer';
+import AdmZip from 'adm-zip';
+import { DOMParser } from 'xmldom';
 
 const upload = multer({ dest: 'uploads/' });
 const app = express();
@@ -65,16 +67,30 @@ app.get('/file/:id', async (req, res) => {
     const { id } = req.params;
     const response = await gdrive.obtenerArchivo(id);
 
-    const rutaLocal = `./public/${id}.epub`;
+    const rutaLocal = `./uploads/${id}.epub`;
     
-    // Guardar el archivo ePub en el servidor
-    fs.writeFileSync(rutaLocal, response.data);
+    if (!fs.existsSync('./uploads/')) {
+      fs.mkdirSync('./uploads/');
+    }
 
-    // Descomprimir el archivo ePub
-    const capituloUrls = descomprimirEpub(rutaLocal, id);
+    // Asegúrate de que la respuesta sea un stream
+    if(response.data && response.data.pipe){
+      const dest = fs.createWriteStream(rutaLocal);
+      response.data.pipe(dest);
 
-    // Enviar la lista de URLs de los capítulos al cliente
-    res.json({ capituloUrls });
+      dest.on('finish', () => {
+        const capituloUrls = descomprimirEpub(rutaLocal, id);
+        res.json({ capituloUrls });
+      });
+    
+      dest.on('error', (err) => {
+        console.error('Error al escribir el archivo ePub en el servidor:', err);
+        res.status(500).send('Error al procesar el archivo');
+      });
+    } else {
+      throw new Error('Response data is not a stream');
+    }
+
   } catch (error) {
     console.error(error);
     res.status(500).send('Error al recuperar el archivo');
@@ -83,7 +99,6 @@ app.get('/file/:id', async (req, res) => {
 
 // Descomprimir archivo .epub
 function descomprimirEpub(rutaLocal, id) {
-  const AdmZip = require('adm-zip');
   const zip = new AdmZip(rutaLocal);
   const rutaDestino = `./public/ebooks/${id}/`;
 

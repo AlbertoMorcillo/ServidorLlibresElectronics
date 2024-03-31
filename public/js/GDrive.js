@@ -26,11 +26,12 @@ async obtenerArchivos(idCarpetaDrive) {
 async obtenerArchivo(idArxiu) {
     const response = await this.drive.files.get({
         fileId: idArxiu,
-        alt: 'epub'
+        alt: 'media'
     }, { responseType: 'stream' });
 
     return response.data;
 }
+
 
 async guardarArchivo(rutaLocal, tipusMIME, idCarpetaDrive, nomArxiuDrive) {
     const fileStream = fs.createReadStream(rutaLocal);
