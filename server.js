@@ -244,7 +244,7 @@ app.get('/', (req, res) => {
 
 app.delete('/uploads/:id', (req, res) => {
   const { id } = req.params;
-  const rutaArchivo = path.join(__dirname, 'uploads', `${id}.epub`); // Asegúrate de que el nombre del archivo corresponde al esperado
+  const rutaArchivo = path.join(__dirname, 'uploads', `${id}.epub`);
 
   try {
       if (fs.existsSync(rutaArchivo)) {
@@ -279,7 +279,7 @@ app.post('/loginUsuari', (req, res) => {
           });
       }
   } else {
-      // Si la acción no es "login", puedes responder con un error o mensaje adecuado.
+     
       res.status(400).json({
           accio: "unknownAction",
           message: "Acción desconocida."

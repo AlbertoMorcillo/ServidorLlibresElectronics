@@ -37,7 +37,6 @@ if (login) {
     });
 }
 
-// Este botón puede estar en otro archivo JS que se carga en la misma página, o puedes incluirlo aquí
 let btnGoBack = document.getElementById('btnGoBack');
 
 if (btnGoBack) {
