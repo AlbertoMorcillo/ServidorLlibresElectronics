@@ -1,16 +1,21 @@
 // Variable global para almacenar el estado del usuario administrador.
 let isAdmin = localStorage.getItem('isAdmin') === 'true';
-let dropArea; // Declaración de la variable global para el área de arrastre y soltado
+let dropArea; 
+let capitulosUrls = []; 
+let indiceCapituloActual = 0; 
 
 // Cuando el documento esté listo, carga los libros y configura la interacción si el usuario es un admin.
 $(document).ready(function() {
     cargarLibros();
-    dropArea = document.getElementById('drop-area'); // Asignar el elemento del DOM a la variable global
+    dropArea = document.getElementById('drop-area');
     if (isAdmin) {
         configurarDropArea();
     } else {
-        dropArea.style.display = 'none'; // Ocultar área de arrastre para no administradores
+        dropArea.style.display = 'none';
     }
+    $('#btnAnterior').on('click', cargarCapituloAnterior);
+    $('#btnSiguiente').on('click', cargarSiguienteCapitulo);
+    cargarEstadoGuardado(); // Cargar el estado guardado al iniciar
 });
 
 // Configura el área de arrastre y soltado solo si el usuario es un administrador.
@@ -109,13 +114,12 @@ function cargarLibros() {
 
 
 function verLibro(idLibro) {
-    // Enviar el id del libro al servidor para que lo descargue y lo descomprima
     $.ajax({
-        url: `/file/${idLibro}`,
+        url: `/read-book/${idLibro}`,
         type: "GET",
         success: function(response) {
-            console.log(response);
-            mostrarCapitulos(response.capituloUrls);
+            capitulosUrls = response.capituloUrls;
+            cargarCapituloActual();
         },
         error: function(xhr) {
             console.error(xhr.responseText);
@@ -124,20 +128,51 @@ function verLibro(idLibro) {
     });
 }
 
-function mostrarCapitulos(capituloUrls) {
-    const listaCapitulos = document.getElementById('listaCapitulos');
-    listaCapitulos.innerHTML = ''; // Limpiar antes de añadir nuevos elementos
-
-    capituloUrls.forEach((url, index) => {
-        let listItem = document.createElement('li');
-        let link = document.createElement('a');
-        link.href = url;
-        link.textContent = `Capítulo ${index + 1}`;
-        link.target = '_blank'; // abrir en una nueva pestaña
-        listItem.appendChild(link);
-        listaCapitulos.appendChild(listItem);
-    });
+function mostrarCapitulos(urls) {
+    capitulosUrls = urls;
+    indiceCapituloActual = 0;
+    cargarCapituloActual(); 
 }
+
+// Función para cargar el capítulo actual en el iframe.
+function cargarCapituloActual() {
+    const iframe = document.getElementById('lectorCapitulos');
+    iframe.src = capitulosUrls[indiceCapituloActual];
+    // Guardar estado actual.
+    localStorage.setItem('capituloActual', indiceCapituloActual);
+    localStorage.setItem('capitulosUrls', JSON.stringify(capitulosUrls));
+}
+
+// Función para cargar el estado guardado al volver a abrir la página.
+function cargarEstadoGuardado() {
+    const urlsGuardadas = JSON.parse(localStorage.getItem('capitulosUrls'));
+    const capituloGuardado = localStorage.getItem('capituloActual');
+    if (urlsGuardadas && capituloGuardado) {
+        capitulosUrls = urlsGuardadas;
+        indiceCapituloActual = parseInt(capituloGuardado, 10);
+        cargarCapituloActual();
+    }
+}
+
+function cargarSiguienteCapitulo() {
+    if (indiceCapituloActual < capitulosUrls.length - 1) {
+        indiceCapituloActual++;
+        cargarCapituloActual();
+    } else {
+        alert("Este es el último capítulo.");
+    }
+}
+
+// Función para cargar el capítulo anterior
+function cargarCapituloAnterior() {
+    if (indiceCapituloActual > 0) {
+        indiceCapituloActual--;
+        cargarCapituloActual();
+    } else {
+        alert("Este es el primer capítulo.");
+    }
+}
+
 
 // Función para eliminar un libro
 function eliminarLibro(idLibro) {
@@ -146,13 +181,30 @@ function eliminarLibro(idLibro) {
     $.ajax({
         url: `/file/${idLibro}`,
         type: "DELETE",
-        success: function() {
-            alert("Libro eliminado con éxito.");
-            cargarLibros(); // Recargar los libros
+        success: function(response) {
+            alert("Libro eliminado con éxito de Drive.");
+            borrarArchivoLocal(idLibro);
+            cargarLibros(); 
         },
         error: function(xhr) {
             console.error(xhr.responseText);
-            alert("Error al eliminar el libro.");
+            alert("Error al eliminar el libro de Drive.");
         }
     });
 }
+
+function borrarArchivoLocal(idLibro) {
+    $.ajax({
+        url: `/uploads/${idLibro}`, 
+        type: "DELETE",
+        success: function(response) {
+            console.log("Archivo local eliminado con éxito.");
+        },
+        error: function(xhr) {
+            console.error(xhr.responseText);
+            alert("Error al eliminar el archivo local.");
+        }
+    });
+}
+
+

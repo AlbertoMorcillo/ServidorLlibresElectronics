@@ -42,9 +42,9 @@
             </div>
         
             <div id="capitulosArea" style="display:none;"> <!-- Ocultar inicialmente -->
-                <button type="button" id="btnPrev" class="btn btn-primary">Anterior</button>
                 <iframe id="viewer" style="width:100%; height:500px;" src=""></iframe> <!-- El src se actualizará dinámicamente -->
-                <button type="button" id="btnNext" class="btn btn-primary">Siguiente</button>
+                <button id="btnAnterior" class="btn btn-primary" onclick="cargarCapituloAnterior()">Anterior</button>
+                <button id="btnSiguiente" class="btn btn-primary" onclick="cargarSiguienteCapitulo()">Siguiente</button>
             </div>
         
             <div id="listaCapitulosArea" style="display:none;"> <!-- Ocultar inicialmente -->

@@ -5,7 +5,12 @@ import fs from 'fs';
 import multer from 'multer';
 import { DOMParser } from 'xmldom';
 import JSZip from 'jszip';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 const upload = multer({ dest: 'uploads/' });
 const app = express();
 const port = 8080;
@@ -53,14 +58,30 @@ app.post('/cargarEbook', upload.single('file'), async (req, res) => {
 });
 
 app.delete('/file/:id', async (req, res) => {
+  const { id } = req.params;
+  
   try {
-    const { id } = req.params;
-    const response = await gdrive.borrarArchivo(id);
-    res.json(response);
+
+    const localFilePath = `./uploads/${id}.epub`;
+
+    await gdrive.borrarArchivo(id);
+
+    // Verifica si el archivo local existe y bórralo
+    if (fs.existsSync(localFilePath)) {
+      fs.unlinkSync(localFilePath);
+      console.log(`Archivo local ${id}.epub eliminado.`);
+    } else {
+      console.log(`Archivo local ${id}.epub no se encontró, puede que ya haya sido eliminado.`);
+    }
+
+    res.json({ message: 'El archivo ha sido eliminado correctamente' });
   } catch (error) {
-    res.status(500).send('Error eliminando archivo');
+    console.error('Error al eliminar el archivo:', error);
+    res.status(500).send('Error al eliminar el archivo');
   }
 });
+
+
 
 app.get('/read-book/:id', async (req, res) => {
   try {
@@ -220,6 +241,23 @@ app.get('/', (req, res) => {
       res.status(404).send('File not found');
   }
 });
+
+app.delete('/uploads/:id', (req, res) => {
+  const { id } = req.params;
+  const rutaArchivo = path.join(__dirname, 'uploads', `${id}.epub`); // Asegúrate de que el nombre del archivo corresponde al esperado
+
+  try {
+      if (fs.existsSync(rutaArchivo)) {
+          fs.unlinkSync(rutaArchivo);
+          res.send({ message: 'Archivo local eliminado con éxito.' });
+      } else {
+          res.status(404).send({ message: 'Archivo no encontrado.' });
+      }
+  } catch (error) {
+      res.status(500).send({ message: 'Error al eliminar el archivo local.' });
+  }
+});
+
 
 app.post('/loginUsuari', (req, res) => {
   let data = req.body;
