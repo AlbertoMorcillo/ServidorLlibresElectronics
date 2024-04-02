@@ -26,7 +26,8 @@
             <div id="drop-area">
                 <p>Arrastra y suelta aquí el epub</p>
             </div>
-            <div id="listaLibros">
+            
+            <div id="librosArea">
                 <table class="table">
                     <thead>
                         <tr>
@@ -38,14 +39,23 @@
                         <!-- Los libros se cargarán aquí -->
                     </tbody>
                 </table>
-                <div id="listaLibros">
-                    <ul id="listaCapitulos">
-                        <!-- Los capítulos se cargarán aquí -->
-                    </ul>
-                </div>
-            </div>            
+            </div>
+        
+            <div id="capitulosArea" style="display:none;"> <!-- Ocultar inicialmente -->
+                <button type="button" id="btnPrev" class="btn btn-primary">Anterior</button>
+                <iframe id="viewer" style="width:100%; height:500px;" src=""></iframe> <!-- El src se actualizará dinámicamente -->
+                <button type="button" id="btnNext" class="btn btn-primary">Siguiente</button>
+            </div>
+        
+            <div id="listaCapitulosArea" style="display:none;"> <!-- Ocultar inicialmente -->
+                <ul id="listaCapitulos">
+                    <!-- Los capítulos se cargarán aquí -->
+                </ul>
+            </div>
+            
             <button type="button" id="btnGoBack" class="btn btn-secondary">Ir atrás</button>
         </div>
+        
     </main>
 </body>
 </html>

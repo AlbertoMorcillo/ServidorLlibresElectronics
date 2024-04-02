@@ -3,8 +3,8 @@ import { google } from 'googleapis';
 import GDrive from './public/js/GDrive.js';
 import fs from 'fs';
 import multer from 'multer';
-import AdmZip from 'adm-zip';
 import { DOMParser } from 'xmldom';
+import JSZip from 'jszip';
 
 const upload = multer({ dest: 'uploads/' });
 const app = express();
@@ -62,27 +62,27 @@ app.delete('/file/:id', async (req, res) => {
   }
 });
 
-app.get('/file/:id', async (req, res) => {
+app.get('/read-book/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const response = await gdrive.obtenerArchivo(id);
-
     const rutaLocal = `./uploads/${id}.epub`;
     
     if (!fs.existsSync('./uploads/')) {
       fs.mkdirSync('./uploads/');
     }
 
-    // Asegúrate de que la respuesta sea un stream
-    if(response.data && response.data.pipe){
+    if (response.data && response.data.pipe) {
       const dest = fs.createWriteStream(rutaLocal);
       response.data.pipe(dest);
 
-      dest.on('finish', () => {
-        const capituloUrls = descomprimirEpub(rutaLocal, id);
+      dest.on('finish', async () => {
+        const data = fs.readFileSync(rutaLocal);
+        const zip = new JSZip();
+        const capituloUrls = await descomprimirEpub(data, id);
         res.json({ capituloUrls });
       });
-    
+
       dest.on('error', (err) => {
         console.error('Error al escribir el archivo ePub en el servidor:', err);
         res.status(500).send('Error al procesar el archivo');
@@ -90,7 +90,37 @@ app.get('/file/:id', async (req, res) => {
     } else {
       throw new Error('Response data is not a stream');
     }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error al recuperar el archivo');
+  }
+});
 
+app.get('/file/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const response = await gdrive.obtenerArchivo(id);
+    const rutaLocal = `./uploads/${id}.epub`;
+
+    if (!fs.existsSync('./uploads/')) {
+      fs.mkdirSync('./uploads/');
+    }
+
+    if (response && response.pipe) {
+      const dest = fs.createWriteStream(rutaLocal);
+      response.pipe(dest);
+
+      dest.on('finish', () => {
+        res.download(rutaLocal); // Descargar el archivo
+      });
+
+      dest.on('error', (err) => {
+        console.error('Error al escribir el archivo ePub en el servidor:', err);
+        res.status(500).send('Error al procesar el archivo');
+      });
+    } else {
+      throw new Error('Response data is not a stream');
+    }
   } catch (error) {
     console.error(error);
     res.status(500).send('Error al recuperar el archivo');
@@ -98,8 +128,7 @@ app.get('/file/:id', async (req, res) => {
 });
 
 // Descomprimir archivo .epub
-function descomprimirEpub(rutaLocal, id) {
-  const zip = new AdmZip(rutaLocal);
+async function descomprimirEpub(rutaLocal, id) {
   const rutaDestino = `./public/ebooks/${id}/`;
 
   // Crear carpeta de destino si no existe
@@ -107,28 +136,49 @@ function descomprimirEpub(rutaLocal, id) {
     fs.mkdirSync(rutaDestino, { recursive: true });
   }
 
-  zip.extractAllTo(rutaDestino, true);
+  // Leer el archivo EPUB
+  const epubData = fs.readFileSync(rutaLocal);
+  const zip = new JSZip();
+  await zip.loadAsync(epubData);
 
-  const containerXml = fs.readFileSync(`${rutaDestino}META-INF/container.xml`, 'utf-8');
-  const rutaContentOpf = /full-path="([^"]+)"/.exec(containerXml)[1];
+  // Función para extraer los archivos del zip a disco
+  async function extraerYGuardar(zipObj, rutaDestino) {
+    const zipEntries = Object.keys(zipObj.files);
+    for (let entryName of zipEntries) {
+      const entry = zipObj.files[entryName];
+      if (!entry.dir) {
+        const content = await entry.async('nodebuffer');
+        const fullPath = path.join(rutaDestino, entryName);
+        fs.mkdirSync(path.dirname(fullPath), { recursive: true });
+        fs.writeFileSync(fullPath, content);
+      }
+    }
+  }
 
-  const contentOpf = fs.readFileSync(`${rutaDestino}${rutaContentOpf}`, 'utf-8');
+  await extraerYGuardar(zip, rutaDestino);
+
+  // Acceder a container.xml y content.opf
+  const containerXmlContent = await zip.file("META-INF/container.xml").async("string");
+  const rutaContentOpf = /full-path="([^"]+)"/.exec(containerXmlContent)[1];
+  const contentOpf = await zip.file(rutaContentOpf).async("string");
+
   const parser = new DOMParser();
   const xmlDoc = parser.parseFromString(contentOpf, 'text/xml');
 
   const capituloUrls = [];
-
   const spineItems = xmlDoc.getElementsByTagName('itemref');
 
-  for (let item of spineItems) {
-    const idref = item.getAttribute('idref');
-    const href = xmlDoc.querySelector(`item[id="${idref}"]`).getAttribute('href');
-    capituloUrls.push(`${rutaDestino}${href}`);
+  for (let i = 0; i < spineItems.length; i++) {
+    const idref = spineItems[i].getAttribute('idref');
+    const itemElement = xmlDoc.getElementById(idref);
+    if (itemElement) {
+      const href = itemElement.getAttribute('href');
+      capituloUrls.push(`${rutaDestino}${href}`);
+    }
   }
 
   return capituloUrls;
 }
-
 
 app.post('/folder', async (req, res) => {
   try {
@@ -139,7 +189,6 @@ app.post('/folder', async (req, res) => {
     res.status(500).send('Error creando carpeta');
   }
 });
-
 
 let usuaris = [];
 

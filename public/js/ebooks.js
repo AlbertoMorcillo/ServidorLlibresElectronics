@@ -133,6 +133,7 @@ function mostrarCapitulos(capituloUrls) {
         let link = document.createElement('a');
         link.href = url;
         link.textContent = `Capítulo ${index + 1}`;
+        link.target = '_blank'; // abrir en una nueva pestaña
         listItem.appendChild(link);
         listaCapitulos.appendChild(listItem);
     });
